@@ -5,6 +5,13 @@
 
 /////////////////////////////
 /*This looks like a good place to declare any state or global variables you might need*/
+const BASE = "https://fsa-puppy-bowl.herokuapp.com/api";
+const COHORT = "/2605-DYLAN";
+const RESOURCE = "/players";
+const API = BASE + COHORT + RESOURCE;
+
+let players = [];
+let selectedPlayer = null;
 
 ////////////////////////////
 
@@ -13,9 +20,25 @@
  * This function should not be doing any rendering
  * Instead, this function should be keeping our state up to date
  */
-const fetchAllPlayers = async () => {
-  //TODO
-};
+async function getPlayers() {
+  try {
+    console.log("Fetching from:", API);
+
+    const response = await fetch(API);
+
+    console.log("Status:", response.status);
+
+    const result = await response.json();
+
+    console.log(result);
+
+    players = result.data.players;
+
+    console.log("Players loaded:", players.length);
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 /**
  * Fetches a single player from the API.
@@ -28,7 +51,16 @@ const fetchAllPlayers = async () => {
  * Unless we know the id of the player we are trying to fetch, we cannot call fetchSinglePlayer()
  */
 const fetchSinglePlayer = async (playerId) => {
-  //TODO
+  try {
+    const response = await fetch(`${API}/${playerId}`);
+    const result = await response.json();
+
+    selectedPlayer = result.data.player;
+
+    render();
+  } catch (error) {
+    console.error("Error fetching player:", error);
+  }
 };
 
 /**
@@ -47,7 +79,20 @@ const fetchSinglePlayer = async (playerId) => {
  */
 
 const addNewPlayer = async (newPlayer) => {
-  //TODO
+  try {
+    await fetch(API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newPlayer),
+    });
+
+    await getPlayers();
+    render();
+  } catch (error) {
+    console.error("Error adding player:", error);
+  }
 };
 
 /**
@@ -62,7 +107,18 @@ const addNewPlayer = async (newPlayer) => {
  */
 
 const removePlayer = async (playerId) => {
-  //TODO
+  try {
+    await fetch(`${API}/${playerId}`, {
+      method: "DELETE",
+    });
+
+    selectedPlayer = null;
+
+    await getPlayers();
+    render();
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 /**
@@ -81,8 +137,111 @@ const removePlayer = async (playerId) => {
  *    from the database and our current view without having to refresh
  *
  */
+////////////////////////////
+
+function PlayerListItem(player) {
+  const $li = document.createElement("li");
+
+  $li.innerHTML = `
+    <img src="${player.imageUrl}" alt="${player.name}" width="50" />
+    <span>${player.name}</span>
+  `;
+
+  $li.addEventListener("click", () => {
+    console.log("Clicked player:", player.id);
+
+    fetchSinglePlayer(player.id);
+  });
+
+  return $li;
+}
+
+function PlayerList() {
+  const $ul = document.createElement("ul");
+
+  const $players = players.map(PlayerListItem);
+
+  $ul.replaceChildren(...$players);
+
+  return $ul;
+}
+
+function SelectedPlayerView() {
+  if (!selectedPlayer) {
+    const $p = document.createElement("p");
+    $p.textContent = "Select a puppy to view details.";
+    return $p;
+  }
+
+  const $section = document.createElement("section");
+
+  $section.innerHTML = `
+    <h2>${selectedPlayer.name}</h2>
+    <img src="${selectedPlayer.imageUrl}" alt="${selectedPlayer.name}" width="250" />
+    <p><strong>ID:</strong> ${selectedPlayer.id}</p>
+    <p><strong>Breed:</strong> ${selectedPlayer.breed}</p>
+    <p><strong>Status:</strong> ${selectedPlayer.status}</p>
+    <p><strong>Team:</strong> ${
+      selectedPlayer.team ? selectedPlayer.team.name : "Unassigned"
+    }</p>
+    <button id="remove-player">Remove from roster</button>
+  `;
+
+  $section.querySelector("#remove-player").addEventListener("click", () => {
+    removePlayer(selectedPlayer.id);
+  });
+
+  return $section;
+}
+
+function PlayerForm() {
+  const $form = document.createElement("form");
+
+  $form.innerHTML = `
+    <h2>Invite a puppy</h2>
+
+    <label>Name</label>
+    <input name="name" required />
+
+    <label>Breed</label>
+    <input name="breed" required />
+
+    <button>Add Puppy</button>
+  `;
+
+  $form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData($form);
+
+    const newPlayer = {
+      name: formData.get("name"),
+      breed: formData.get("breed"),
+    };
+
+    await addNewPlayer(newPlayer);
+
+    $form.reset();
+  });
+
+  return $form;
+}
+
 const render = () => {
-  // TODO
+  const $app = document.querySelector("#app");
+
+  $app.innerHTML = `
+    <h1>Puppy Bowl</h1>
+    <main>
+      <section id="roster"></section>
+      <section id="details"></section>
+      <section id="form"></section>
+    </main>
+  `;
+
+  document.querySelector("#roster").appendChild(PlayerList());
+  document.querySelector("#details").appendChild(SelectedPlayerView());
+  document.querySelector("#form").appendChild(PlayerForm());
 };
 
 /**
@@ -90,7 +249,7 @@ const render = () => {
  * HOWEVER....
  */
 const init = async () => {
-  //Before we render, what do we always need?
+  await getPlayers();
 
   render();
 };
