@@ -22,19 +22,10 @@ let selectedPlayer = null;
  */
 async function getPlayers() {
   try {
-    console.log("Fetching from:", API);
-
     const response = await fetch(API);
-
-    console.log("Status:", response.status);
-
     const result = await response.json();
 
-    console.log(result);
-
     players = result.data.players;
-
-    console.log("Players loaded:", players.length);
   } catch (error) {
     console.error(error);
   }
@@ -157,10 +148,16 @@ function PlayerListItem(player) {
 }
 
 function PlayerList() {
+  if (players.length === 0) {
+    const $p = document.createElement("p");
+    $p.textContent = "No puppies found.";
+    return $p;
+  }
+
   const $ul = document.createElement("ul");
+  $ul.classList.add("players");
 
   const $players = players.map(PlayerListItem);
-
   $ul.replaceChildren(...$players);
 
   return $ul;

@@ -1,0 +1,106 @@
+body {
+  margin: 0;
+  padding: 0 2rem;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+h1 {
+  text-align: center;
+}
+
+main {
+  display: grid;
+  gap: 2rem;
+}
+
+@media (width >= 700px) {
+  main {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Puppy roster */
+
+.players {
+  display: grid;
+  gap: 0.5rem;
+  padding-left: 0;
+  list-style-type: none;
+}
+
+.players li {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  border: 2px dashed black;
+  border-radius: 0.4rem;
+  padding: 0.35rem;
+
+  cursor: pointer;
+  background: white;
+  font-size: 1.5rem;
+}
+
+.players li:hover {
+  border-style: solid;
+}
+
+.players li.selected {
+  font-weight: bold;
+  font-style: italic;
+  border-style: solid;
+}
+
+.players img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 0.35rem;
+}
+
+/* Details */
+
+#details section {
+  padding-top: 2rem;
+}
+
+#details img {
+  display: block;
+  width: 160px;
+  height: 240px;
+  object-fit: cover;
+  border-radius: 1rem;
+  margin: 0 auto 1rem;
+}
+
+#details p {
+  margin: 0.5rem 0;
+}
+
+#remove-player {
+  width: 100%;
+  padding: 0.35rem;
+}
+
+/* Form */
+
+#form form {
+  display: grid;
+  gap: 0.4rem;
+}
+
+#form h2 {
+  margin-bottom: 0;
+}
+
+#form input,
+#form select,
+#form button {
+  padding: 0.25rem;
+  font-family: inherit;
+}
+
+#form button {
+  cursor: pointer;
+}
